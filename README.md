@@ -216,4 +216,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for DPDP compliance and global consent management**
+**Built with ❤️ for DPDP compliance and global consent management**# Redeploy trigger - Sat Jan  3 19:19:27 IST 2026
