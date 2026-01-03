@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPDP Consent Manager SDK Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .code-block {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .template-selector {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .template-option {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .template-option:hover {
+            background: #f0f0f0;
+        }
+        .template-option.selected {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛡️ DPDP Consent Manager SDK Test</h1>
+        <p>This page demonstrates the DPDP Consent Manager SDK integration with your created templates.</p>
+    </div>
+
+    <div class="content">
+        <h2>Template Selection</h2>
+        <div class="template-selector">
+            <p><strong>Select a template to test:</strong></p>
+            <div id="template-list">
+                <div class="status info">Loading available templates...</div>
+            </div>
+            <button onclick="loadSelectedTemplate()" id="load-template-btn" disabled>Load Selected Template</button>
+        </div>
+
+        <h2>Integration Status</h2>
+        <div id="status" class="status info">
+            ⏳ Select a template to begin testing...
+        </div>
+
+        <h2>Current SDK Configuration</h2>
+        <div class="code-block" id="sdk-config">
+            No template selected yet
+        </div>
+
+        <h2>Test Controls</h2>
+        <button onclick="showBanner()" id="show-btn" disabled>Show Consent Banner</button>
+        <button onclick="hideBanner()" id="hide-btn" disabled>Hide Consent Banner</button>
+        <button onclick="checkSDKStatus()" id="status-btn" disabled>Check SDK Status</button>
+        <button onclick="reloadSDK()" id="reload-btn" disabled>Reload SDK</button>
+
+        <h2>Website Content</h2>
+        <p>This content demonstrates how the consent banner appears over your website.</p>
+        
+        <h3>Features</h3>
+        <ul>
+            <li>✅ DPDP Act Compliant</li>
+            <li>✅ Multi-language Support</li>
+            <li>✅ Customizable Styling</li>
+            <li>✅ Purpose-based Consent</li>
+            <li>✅ Analytics Integration</li>
+        </ul>
+
+        <h2>Console Output</h2>
+        <div id="console-output" class="code-block" style="height: 200px; overflow-y: auto; background: #000; color: #0f0; font-size: 12px;">
+            Console messages will appear here...
+        </div>
+    </div>
+
+    <script>
+        let selectedTemplate = null;
+        let currentScript = null;
+
+        // Load available templates
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/api/templates');
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    displayTemplates(result.data);
+                } else {
+                    document.getElementById('template-list').innerHTML = 
+                        '<div class="status error">No templates found. Create a template first in the Notice Banner Config.</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load templates:', error);
+                document.getElementById('template-list').innerHTML = 
+                    '<div class="status error">Failed to load templates. Make sure your server is running.</div>';
+            }
+        }
+
+        // Display templates for selection
+        function displayTemplates(templates) {
+            const templateList = document.getElementById('template-list');
+            templateList.innerHTML = '';
+            
+            templates.forEach(template => {
+                const templateDiv = document.createElement('div');
+                templateDiv.className = 'template-option';
+                templateDiv.innerHTML = `
+                    <strong>${template.name}</strong><br>
+                    <small>ID: ${template.id} | Status: ${template.status} | Created: ${new Date(template.createdAt).toLocaleDateString()}</small><br>
+                    <em>${template.description || 'No description'}</em>
+                `;
+                templateDiv.onclick = () => selectTemplate(template, templateDiv);
+                templateList.appendChild(templateDiv);
+            });
+        }
+
+        // Select a template
+        function selectTemplate(template, element) {
+            // Remove previous selection
+            document.querySelectorAll('.template-option').forEach(el => el.classList.remove('selected'));
+            
+            // Select current
+            element.classList.add('selected');
+            selectedTemplate = template;
+            
+            // Enable load button
+            document.getElementById('load-template-btn').disabled = false;
+            
+            // Update SDK config display
+            updateSDKConfigDisplay(template.id);
+        }
+
+        // Update SDK config display
+        function updateSDKConfigDisplay(templateId) {
+            const configEl = document.getElementById('sdk-config');
+            configEl.innerHTML = `&lt;script 
+  src="${window.location.origin}/sdk/consent-manager.js"
+  data-template-id="${templateId}"
+  data-user-id="user_test_${Date.now()}"
+  data-platform="web"
+  data-language="en"
+  defer&gt;
+&lt;/script&gt;`;
+        }
+
+        // Load selected template
+        function loadSelectedTemplate() {
+            if (!selectedTemplate) return;
+            
+            // Remove existing script if any
+            if (currentScript) {
+                currentScript.remove();
+                delete window.DPDPConsentManager;
+            }
+            
+            // Create new script
+            currentScript = document.createElement('script');
+            currentScript.src = '/sdk/consent-manager.js';
+            currentScript.setAttribute('data-template-id', selectedTemplate.id);
+            currentScript.setAttribute('data-user-id', `user_test_${Date.now()}`);
+            currentScript.setAttribute('data-platform', 'web');
+            currentScript.setAttribute('data-language', 'en');
+            currentScript.defer = true;
+            
+            // Add to document
+            document.head.appendChild(currentScript);
+            
+            updateStatus('Loading SDK with template: ' + selectedTemplate.name, 'info');
+            
+            // Enable test buttons
+            setTimeout(() => {
+                document.getElementById('show-btn').disabled = false;
+                document.getElementById('hide-btn').disabled = false;
+                document.getElementById('status-btn').disabled = false;
+                document.getElementById('reload-btn').disabled = false;
+            }, 2000);
+        }
+
+        // Test functions
+        function showBanner() {
+            if (window.DPDPConsentManager) {
+                window.DPDPConsentManager.showBanner();
+                updateStatus('Banner shown manually', 'info');
+            } else {
+                updateStatus('SDK not loaded yet', 'error');
+            }
+        }
+
+        function hideBanner() {
+            if (window.DPDPConsentManager) {
+                window.DPDPConsentManager.hideBanner();
+                updateStatus('Banner hidden manually', 'info');
+            } else {
+                updateStatus('SDK not loaded yet', 'error');
+            }
+        }
+
+        function checkSDKStatus() {
+            if (window.DPDPConsentManager) {
+                const config = window.DPDPConsentManager.config;
+                updateStatus(`✅ SDK loaded! Version: ${window.DPDPConsentManager.version}, Template: ${config.templateId}`, 'success');
+                logToConsole(`SDK Config: ${JSON.stringify(config, null, 2)}`);
+            } else {
+                updateStatus('❌ SDK not loaded', 'error');
+            }
+        }
+
+        function reloadSDK() {
+            loadSelectedTemplate();
+        }
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            
+            // Also log to console output
+            logToConsole(`[${new Date().toLocaleTimeString()}] ${message}`);
+        }
+
+        function logToConsole(message) {
+            const consoleEl = document.getElementById('console-output');
+            consoleEl.textContent += message + '\n';
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        // Override console methods to capture SDK messages
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (args[0] && args[0].includes && args[0].includes('[DPDP SDK]')) {
+                logToConsole(args.join(' '));
+            }
+        };
+
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            if (args[0] && args[0].includes && args[0].includes('[DPDP SDK]')) {
+                logToConsole('ERROR: ' + args.join(' '));
+            }
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTemplates();
+            logToConsole('Test page loaded. Select a template to begin testing.');
+        });
+    </script>
+</body>
+</html>

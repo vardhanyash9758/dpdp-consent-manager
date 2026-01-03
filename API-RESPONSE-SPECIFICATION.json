@@ -1,0 +1,568 @@
+{
+  "api_responses": {
+    "consent_templates": {
+      "GET /api/templates": {
+        "description": "List all consent templates with pagination",
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": "template_1734567890123_abc123",
+              "name": "Website Cookie Consent",
+              "description": "Main website consent template",
+              "status": "active",
+              "bannerConfig": {
+                "title": "Privacy & Cookie Consent",
+                "description": "We use cookies to enhance your experience and analyze our traffic.",
+                "acceptButtonText": "Accept All",
+                "rejectButtonText": "Reject All",
+                "customizeButtonText": "Customize",
+                "position": "bottom",
+                "theme": "light",
+                "primaryColor": "#3b82f6",
+                "backgroundColor": "#ffffff",
+                "textColor": "#374151"
+              },
+              "purposes": [
+                {
+                  "id": "purpose_1734567890124_def456",
+                  "name": "Essential Website Functions",
+                  "description": "Necessary for the website to function properly",
+                  "required": true,
+                  "category": "essential",
+                  "dataFields": ["session_id"],
+                  "thirdPartySources": [],
+                  "platforms": ["web", "mobile"],
+                  "validityDays": 365
+                }
+              ],
+              "translations": {
+                "en": {
+                  "title": "Privacy & Cookie Consent",
+                  "description": "We use cookies to enhance your experience",
+                  "acceptButtonText": "Accept All",
+                  "rejectButtonText": "Reject All",
+                  "customizeButtonText": "Customize",
+                  "purposes": {
+                    "purpose_1734567890124_def456": {
+                      "name": "Essential Website Functions",
+                      "description": "Necessary for the website to function properly"
+                    }
+                  }
+                }
+              },
+              "createdAt": "2024-12-16T10:30:00Z",
+              "updatedAt": "2024-12-16T10:30:00Z",
+              "createdBy": "user_123",
+              "organizationId": "org_456"
+            }
+          ],
+          "total": 1,
+          "page": 1,
+          "limit": 10
+        }
+      },
+      "POST /api/templates": {
+        "description": "Create new consent template",
+        "request": {
+          "name": "Website Cookie Consent",
+          "description": "Main website consent template",
+          "status": "draft",
+          "bannerConfig": {
+            "title": "Privacy & Cookie Consent",
+            "description": "We use cookies to enhance your experience and analyze our traffic.",
+            "acceptButtonText": "Accept All",
+            "rejectButtonText": "Reject All",
+            "customizeButtonText": "Customize",
+            "position": "bottom",
+            "theme": "light",
+            "primaryColor": "#3b82f6",
+            "backgroundColor": "#ffffff",
+            "textColor": "#374151"
+          },
+          "purposes": [
+            {
+              "purposeId": "purpose_1734567890124_def456",
+              "dataFields": ["session_id"],
+              "thirdPartySources": [],
+              "platforms": ["web", "mobile"],
+              "validityDays": 365
+            }
+          ],
+          "translations": {},
+          "createdBy": "user_123",
+          "organizationId": "org_456"
+        },
+        "response": {
+          "success": true,
+          "message": "Template created successfully",
+          "data": {
+            "id": "template_1734567890123_abc123",
+            "name": "Website Cookie Consent",
+            "status": "draft",
+            "createdAt": "2024-12-16T10:30:00Z"
+          }
+        }
+      },
+      "GET /api/templates/{id}": {
+        "description": "Get specific template by ID",
+        "response": {
+          "success": true,
+          "data": {
+            "id": "template_1734567890123_abc123",
+            "name": "Website Cookie Consent",
+            "description": "Main website consent template",
+            "status": "active",
+            "bannerConfig": {},
+            "purposes": [],
+            "translations": {},
+            "createdAt": "2024-12-16T10:30:00Z",
+            "updatedAt": "2024-12-16T10:30:00Z",
+            "createdBy": "user_123",
+            "organizationId": "org_456"
+          }
+        }
+      }
+    },
+    "consent_purposes": {
+      "GET /api/purposes": {
+        "description": "List all consent purposes",
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": "purpose_1734567890124_def456",
+              "name": "Essential Website Functions",
+              "description": "Necessary for the website to function properly, including security, network management, and accessibility features.",
+              "required": true,
+              "category": "essential",
+              "isActive": true,
+              "usageCount": 3,
+              "createdAt": "2024-12-16T10:30:00Z",
+              "updatedAt": "2024-12-16T10:30:00Z"
+            },
+            {
+              "id": "purpose_1734567890125_ghi789",
+              "name": "Analytics & Performance",
+              "description": "Help us understand how visitors interact with our website by collecting and reporting information anonymously.",
+              "required": false,
+              "category": "analytics",
+              "isActive": true,
+              "usageCount": 1,
+              "createdAt": "2024-12-16T10:31:00Z",
+              "updatedAt": "2024-12-16T10:31:00Z"
+            }
+          ]
+        }
+      },
+      "POST /api/purposes": {
+        "description": "Create new consent purpose",
+        "request": {
+          "name": "Marketing Communications",
+          "description": "Send promotional emails and marketing communications based on your preferences.",
+          "required": false,
+          "category": "marketing",
+          "isActive": true
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "id": "purpose_1734567890126_jkl012",
+            "name": "Marketing Communications",
+            "description": "Send promotional emails and marketing communications based on your preferences.",
+            "required": false,
+            "category": "marketing",
+            "isActive": true,
+            "usageCount": 0,
+            "createdAt": "2024-12-16T10:32:00Z",
+            "updatedAt": "2024-12-16T10:32:00Z"
+          }
+        }
+      }
+    },
+    "consent_collection": {
+      "POST /api/blutic-svc/api/v1/public/consent-template/update-user": {
+        "description": "Collect user consent decision",
+        "request": {
+          "templateId": "template_1734567890123_abc123",
+          "userReferenceId": "user_ref_789",
+          "status": "accepted",
+          "purposes": ["purpose_1734567890124_def456", "purpose_1734567890125_ghi789"],
+          "platform": "web",
+          "language": "en",
+          "timestamp": "2024-12-16T10:35:00Z"
+        },
+        "response": {
+          "success": true,
+          "message": "Consent saved successfully",
+          "data": {
+            "id": "consent_1734567890127_mno345",
+            "templateId": "template_1734567890123_abc123",
+            "userReferenceId": "user_ref_789",
+            "status": "accepted",
+            "purposes": ["purpose_1734567890124_def456", "purpose_1734567890125_ghi789"],
+            "timestamp": 1734567900000,
+            "platform": "web",
+            "language": "en"
+          }
+        }
+      },
+      "GET /api/blutic-svc/api/v1/public/consent-template/update-user": {
+        "description": "Retrieve consent records (admin only)",
+        "query_params": {
+          "templateId": "template_1734567890123_abc123",
+          "userReferenceId": "user_ref_789"
+        },
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": "consent_1734567890127_mno345",
+              "templateId": "template_1734567890123_abc123",
+              "userReferenceId": "user_ref_789",
+              "status": "accepted",
+              "acceptedPurposes": ["purpose_1734567890124_def456", "purpose_1734567890125_ghi789"],
+              "platform": "web",
+              "language": "en",
+              "userAgent": "Mozilla/5.0...",
+              "ipAddress": "192.168.1.1",
+              "consentTimestamp": "2024-12-16T10:35:00Z",
+              "expiryDate": "2025-12-16T10:35:00Z",
+              "version": 1,
+              "createdAt": "2024-12-16T10:35:00Z",
+              "updatedAt": "2024-12-16T10:35:00Z"
+            }
+          ],
+          "total": 1
+        }
+      }
+    },
+    "vendor_management": {
+      "GET /api/vendors": {
+        "description": "List all vendors with statistics",
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "vendor_id": "vendor_1734567890128_pqr678",
+              "vendor_name": "Analytics Provider Inc",
+              "category": "analytics",
+              "contact_name": "John Smith",
+              "contact_email": "john@analytics-provider.com",
+              "notes": "Primary analytics vendor for website tracking",
+              "dpa_status": "APPROVED",
+              "dpa_file_url": "/uploads/dpa/Analytics_Provider_Inc_1734567890128.pdf",
+              "dpa_signed_on": "2024-12-15",
+              "dpa_valid_till": "2025-12-15",
+              "allowed_purposes": ["analytics", "performance"],
+              "allowed_data_types": ["page_views", "user_sessions", "device_info"],
+              "risk_level": "MEDIUM",
+              "is_active": true,
+              "created_at": "2024-12-16T09:00:00Z",
+              "updated_at": "2024-12-16T09:30:00Z"
+            }
+          ],
+          "stats": {
+            "total_vendors": 5,
+            "approved_vendors": 3,
+            "pending_dpa": 1,
+            "high_risk_vendors": 1
+          }
+        }
+      },
+      "POST /api/vendors": {
+        "description": "Create new vendor",
+        "request": {
+          "vendor_name": "Marketing Platform Ltd",
+          "category": "marketing",
+          "contact_name": "Jane Doe",
+          "contact_email": "jane@marketing-platform.com",
+          "notes": "Email marketing and campaign management"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "vendor_id": "vendor_1734567890129_stu901",
+            "vendor_name": "Marketing Platform Ltd",
+            "category": "marketing",
+            "contact_name": "Jane Doe",
+            "contact_email": "jane@marketing-platform.com",
+            "notes": "Email marketing and campaign management",
+            "dpa_status": "PENDING",
+            "risk_level": "MEDIUM",
+            "is_active": true,
+            "created_at": "2024-12-16T10:40:00Z",
+            "updated_at": "2024-12-16T10:40:00Z"
+          }
+        }
+      },
+      "POST /api/vendors/{id}/approve": {
+        "description": "Approve vendor DPA",
+        "request": {
+          "dpa_signed_on": "2024-12-16",
+          "dpa_valid_till": "2025-12-16",
+          "dpa_file_url": "/uploads/dpa/Marketing_Platform_Ltd_1734567890129.pdf"
+        },
+        "response": {
+          "success": true,
+          "message": "Vendor approved successfully",
+          "data": {
+            "vendor_id": "vendor_1734567890129_stu901",
+            "dpa_status": "APPROVED",
+            "dpa_signed_on": "2024-12-16",
+            "dpa_valid_till": "2025-12-16",
+            "risk_level": "LOW",
+            "updated_at": "2024-12-16T10:45:00Z"
+          }
+        }
+      },
+      "POST /api/vendors/{id}/upload-dpa": {
+        "description": "Upload DPA document",
+        "request": "multipart/form-data with dpa_file",
+        "response": {
+          "success": true,
+          "message": "DPA file uploaded successfully",
+          "data": {
+            "vendor": {
+              "vendor_id": "vendor_1734567890129_stu901",
+              "dpa_file_url": "/uploads/dpa/Marketing_Platform_Ltd_1734567890129.pdf",
+              "updated_at": "2024-12-16T10:43:00Z"
+            },
+            "file_url": "/uploads/dpa/Marketing_Platform_Ltd_1734567890129.pdf",
+            "filename": "Marketing_Platform_Ltd_1734567890129.pdf"
+          }
+        }
+      }
+    },
+    "analytics": {
+      "GET /api/analytics/consent": {
+        "description": "Get consent analytics data",
+        "query_params": {
+          "templateId": "template_1734567890123_abc123",
+          "startDate": "2024-12-01",
+          "endDate": "2024-12-16",
+          "groupBy": "day"
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "summary": {
+              "total_consents": 1250,
+              "accepted": 980,
+              "rejected": 200,
+              "partial": 70,
+              "acceptance_rate": 78.4
+            },
+            "by_purpose": [
+              {
+                "purpose_id": "purpose_1734567890124_def456",
+                "purpose_name": "Essential Website Functions",
+                "accepted": 1250,
+                "rejected": 0,
+                "acceptance_rate": 100.0
+              },
+              {
+                "purpose_id": "purpose_1734567890125_ghi789",
+                "purpose_name": "Analytics & Performance",
+                "accepted": 850,
+                "rejected": 400,
+                "acceptance_rate": 68.0
+              }
+            ],
+            "by_platform": [
+              {
+                "platform": "web",
+                "total": 900,
+                "accepted": 720,
+                "acceptance_rate": 80.0
+              },
+              {
+                "platform": "mobile",
+                "total": 350,
+                "accepted": 260,
+                "acceptance_rate": 74.3
+              }
+            ],
+            "timeline": [
+              {
+                "date": "2024-12-15",
+                "total": 85,
+                "accepted": 68,
+                "rejected": 12,
+                "partial": 5
+              },
+              {
+                "date": "2024-12-16",
+                "total": 92,
+                "accepted": 75,
+                "rejected": 13,
+                "partial": 4
+              }
+            ]
+          }
+        }
+      }
+    },
+    "email_management": {
+      "GET /api/email/events": {
+        "description": "Get email events and statistics",
+        "query_params": {
+          "eventType": "vendor_approved",
+          "status": "sent",
+          "limit": 50
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "events": [
+              {
+                "id": "email_1734567890130_vwx234",
+                "eventType": "vendor_approved",
+                "data": {
+                  "vendor_name": "Analytics Provider Inc",
+                  "dpa_signed_on": "2024-12-15",
+                  "dpa_valid_till": "2025-12-15",
+                  "risk_level": "MEDIUM"
+                },
+                "recipients": ["john@analytics-provider.com"],
+                "status": "sent",
+                "sentAt": "2024-12-16T09:35:00Z",
+                "createdAt": "2024-12-16T09:30:00Z"
+              }
+            ],
+            "stats": {
+              "total_sent": 45,
+              "total_failed": 2,
+              "recent_events": [],
+              "events_by_type": {
+                "vendor_created": 12,
+                "vendor_approved": 8,
+                "dpa_uploaded": 15,
+                "template_created": 5,
+                "consent_collected": 5
+              }
+            }
+          }
+        }
+      },
+      "GET /api/email/templates": {
+        "description": "Get all email templates",
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": "template_vendor_approved",
+              "eventType": "vendor_approved",
+              "subject": "Vendor Approved: {{vendor_name}}",
+              "htmlContent": "<h2>Vendor DPA Approved</h2><p>The following vendor has been approved...</p>",
+              "textContent": "Vendor DPA Approved\n\nVendor: {{vendor_name}}...",
+              "recipients": [
+                {
+                  "type": "email",
+                  "value": "admin@company.com"
+                }
+              ],
+              "isActive": true,
+              "createdAt": "2024-12-16T08:00:00Z",
+              "updatedAt": "2024-12-16T08:00:00Z"
+            }
+          ]
+        }
+      }
+    },
+    "dpa_monitoring": {
+      "GET /api/dpa-monitor": {
+        "description": "Get DPA monitoring status and statistics",
+        "response": {
+          "success": true,
+          "data": {
+            "monitoring": {
+              "isRunning": true,
+              "intervalMinutes": 60
+            },
+            "statistics": {
+              "total_approved": 15,
+              "expiring_30_days": 3,
+              "expiring_7_days": 1,
+              "expired": 0
+            },
+            "current_status": {
+              "expiring_vendors": [
+                {
+                  "vendor": {
+                    "vendor_id": "vendor_1734567890128_pqr678",
+                    "vendor_name": "Analytics Provider Inc",
+                    "dpa_valid_till": "2024-12-30"
+                  },
+                  "daysUntilExpiry": 14
+                }
+              ],
+              "expired_vendors": []
+            }
+          }
+        }
+      }
+    },
+    "public_endpoints": {
+      "GET /api/public/templates/{id}": {
+        "description": "Get public template for SDK integration",
+        "response": {
+          "success": true,
+          "data": {
+            "id": "template_1734567890123_abc123",
+            "name": "Website Cookie Consent",
+            "config": {
+              "title": "Privacy & Cookie Consent",
+              "description": "We use cookies to enhance your experience and analyze our traffic.",
+              "acceptButtonText": "Accept All",
+              "rejectButtonText": "Reject All",
+              "customizeButtonText": "Customize",
+              "position": "bottom",
+              "theme": "light",
+              "primaryColor": "#3b82f6",
+              "backgroundColor": "#ffffff",
+              "textColor": "#374151"
+            },
+            "purposes": [
+              {
+                "id": "purpose_1734567890124_def456",
+                "name": "Essential Website Functions",
+                "description": "Necessary for the website to function properly",
+                "required": true,
+                "category": "essential"
+              }
+            ],
+            "language": "en",
+            "platform": "web"
+          }
+        }
+      }
+    },
+    "error_responses": {
+      "validation_error": {
+        "success": false,
+        "error": "Validation error",
+        "message": "Missing required fields: name, description",
+        "details": {
+          "field": "name",
+          "rule": "required"
+        }
+      },
+      "not_found": {
+        "success": false,
+        "error": "Not found",
+        "message": "Template with ID 'invalid_id' not found"
+      },
+      "server_error": {
+        "success": false,
+        "error": "Internal server error",
+        "message": "Failed to process request"
+      },
+      "unauthorized": {
+        "success": false,
+        "error": "Unauthorized",
+        "message": "Invalid or missing authentication token"
+      }
+    }
+  }
+}

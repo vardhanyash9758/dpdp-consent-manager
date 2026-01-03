@@ -1,0 +1,41 @@
+# Cloudflare Workers configuration for DPDP Consent Management System
+name = "dpdp-consent-manager"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Production environment
+[env.production.vars]
+NODE_ENV = "production"
+DATABASE_URL = "postgres://54d680ca865a036f91f9c9a9402201b654ff4412c90007fb4642f92846a8bcd5:sk_1_tzzXVB1y6r1GHqXQf4Y@db.prisma.io:5432/postgres?sslmode=require"
+
+# Development environment
+[env.development.vars]
+NODE_ENV = "development"
+DATABASE_URL = "postgres://54d680ca865a036f91f9c9a9402201b654ff4412c90007fb4642f92846a8bcd5:sk_1_tzzXVB1y6r1GHqXQf4Y@db.prisma.io:5432/postgres?sslmode=require"
+
+# Build configuration
+[build]
+command = "npm run build"
+
+# Routes for API endpoints
+[[routes]]
+pattern = "/api/*"
+zone_name = "your-domain.com"  # Replace with your domain
+
+# Static assets
+[[routes]]
+pattern = "/*"
+zone_name = "your-domain.com"  # Replace with your domain
+
+# KV namespaces for caching (optional)
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
+
+# D1 Database (alternative to external PostgreSQL)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "dpdp-consent-db"
+# database_id = "your-d1-database-id"

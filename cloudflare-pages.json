@@ -1,0 +1,50 @@
+{
+  "name": "dpdp-consent-manager",
+  "production_branch": "main",
+  "build": {
+    "command": "npm run build",
+    "destination_dir": "out",
+    "root_dir": "/",
+    "web_analytics_tag": null,
+    "web_analytics_token": null
+  },
+  "source": {
+    "type": "github",
+    "config": {
+      "owner": "your-github-username",
+      "repo_name": "dpdp-consent-manager",
+      "production_branch": "main",
+      "pr_comments_enabled": true,
+      "deployments_enabled": true,
+      "production_deployments_enabled": true,
+      "preview_deployment_setting": "custom",
+      "preview_branch_includes": ["*"],
+      "preview_branch_excludes": ["main"]
+    }
+  },
+  "deployment_configs": {
+    "production": {
+      "environment_variables": {
+        "NODE_ENV": "production",
+        "DATABASE_URL": "postgres://54d680ca865a036f91f9c9a9402201b654ff4412c90007fb4642f92846a8bcd5:sk_1_tzzXVB1y6r1GHqXQf4Y@db.prisma.io:5432/postgres?sslmode=require"
+      },
+      "kv_namespaces": {},
+      "durable_object_namespaces": {},
+      "d1_databases": {},
+      "r2_buckets": {},
+      "services": {},
+      "analytics_engine_datasets": {},
+      "compatibility_date": "2024-01-01",
+      "compatibility_flags": ["nodejs_compat"],
+      "usage_model": "standard"
+    },
+    "preview": {
+      "environment_variables": {
+        "NODE_ENV": "development",
+        "DATABASE_URL": "postgres://54d680ca865a036f91f9c9a9402201b654ff4412c90007fb4642f92846a8bcd5:sk_1_tzzXVB1y6r1GHqXQf4Y@db.prisma.io:5432/postgres?sslmode=require"
+      },
+      "compatibility_date": "2024-01-01",
+      "compatibility_flags": ["nodejs_compat"]
+    }
+  }
+}

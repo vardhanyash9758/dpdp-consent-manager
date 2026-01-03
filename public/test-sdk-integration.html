@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDK Integration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f8fafc;
+            color: #334155;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .status {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px 8px 8px 0;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SDK Integration Test</h1>
+        <p>This page tests the DPDP Consent Manager SDK integration.</p>
+
+        <div class="status">
+            <h3>Test Configuration</h3>
+            <p><strong>Template ID:</strong> template_1765822328032_rfrlc710j</p>
+            <p><strong>User ID:</strong> test-user-sdk-integration</p>
+            <p><strong>Platform:</strong> web</p>
+        </div>
+
+        <div class="status">
+            <h3>Expected Behavior</h3>
+            <ul>
+                <li>Consent banner should appear at the bottom of the page</li>
+                <li>Banner should show "Request for Data Usage Consent" title</li>
+                <li>Should have Accept, Reject, and Customize buttons</li>
+                <li>Clicking buttons should send consent data to backend</li>
+            </ul>
+        </div>
+
+        <div id="consent-events" class="status">
+            <h3>Consent Events</h3>
+            <p>Events will appear here when you interact with the banner...</p>
+        </div>
+
+        <div class="status">
+            <h3>Manual Controls</h3>
+            <button class="button" onclick="showBanner()">Show Banner</button>
+            <button class="button" onclick="hideBanner()">Hide Banner</button>
+            <button class="button" onclick="checkSDK()">Check SDK Status</button>
+        </div>
+
+        <h3>Website Content</h3>
+        <div style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; text-align: center;">
+            <div>
+                <h2>Your Website Content</h2>
+                <p>The consent banner should overlay this content</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DPDP Consent Manager SDK -->
+    <script 
+      src="/sdk/consent-manager.js"
+      data-template-id="template_1765822328032_rfrlc710j"
+      data-user-id="test-user-sdk-integration"
+      data-platform="web"
+      defer>
+    </script>
+    <!-- End DPDP Consent Manager -->
+
+    <script>
+        // Listen for consent events
+        window.addEventListener('message', function(event) {
+            if (event.origin !== window.location.origin) return;
+            
+            console.log('Received message:', event.data);
+            
+            const eventsDiv = document.getElementById('consent-events');
+            
+            if (event.data.type === 'CONSENT_ACTION') {
+                eventsDiv.innerHTML += `
+                    <div class="success" style="margin-top: 10px;">
+                        <strong>✅ Consent Action:</strong> ${event.data.payload.status}<br/>
+                        <strong>Purposes:</strong> ${JSON.stringify(event.data.payload.purposes)}<br/>
+                        <strong>Timestamp:</strong> ${new Date(event.data.payload.timestamp).toLocaleString()}
+                    </div>
+                `;
+            } else if (event.data.type === 'LANGUAGE_CHANGE') {
+                eventsDiv.innerHTML += `
+                    <div style="margin-top: 10px; background: #fef3c7; border: 1px solid #f59e0b; padding: 10px; border-radius: 4px;">
+                        <strong>🌐 Language Change:</strong> ${event.data.payload.language}
+                    </div>
+                `;
+            }
+        });
+
+        function showBanner() {
+            if (window.DPDPConsentManager) {
+                window.DPDPConsentManager.showBanner();
+            } else {
+                alert('SDK not loaded yet');
+            }
+        }
+
+        function hideBanner() {
+            if (window.DPDPConsentManager) {
+                window.DPDPConsentManager.hideBanner();
+            } else {
+                alert('SDK not loaded yet');
+            }
+        }
+
+        function checkSDK() {
+            if (window.DPDPConsentManager) {
+                alert(`SDK Status: Loaded v${window.DPDPConsentManager.version}\nConfig: ${JSON.stringify(window.DPDPConsentManager.config, null, 2)}`);
+            } else {
+                alert('SDK not loaded');
+            }
+        }
+
+        // Check SDK loading
+        setTimeout(() => {
+            if (window.DPDPConsentManager) {
+                document.getElementById('consent-events').innerHTML = `
+                    <h3>Consent Events</h3>
+                    <div class="success">
+                        ✅ SDK loaded successfully! Version: ${window.DPDPConsentManager.version}
+                    </div>
+                `;
+            } else {
+                document.getElementById('consent-events').innerHTML = `
+                    <h3>Consent Events</h3>
+                    <div style="background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: 10px; border-radius: 4px;">
+                        ❌ SDK failed to load
+                    </div>
+                `;
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

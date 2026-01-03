@@ -1,0 +1,232 @@
+{
+  "database_relationships": {
+    "description": "Entity relationships and data flow in the DPDP consent management system",
+    "relationships": {
+      "consent_templates_to_purposes": {
+        "type": "many_to_many",
+        "junction_table": "template_purposes",
+        "description": "Templates can have multiple purposes, purposes can be used in multiple templates",
+        "foreign_keys": {
+          "template_purposes.template_id": "consent_templates.id",
+          "template_purposes.purpose_id": "consent_purposes.id"
+        },
+        "cascade": {
+          "on_delete_template": "CASCADE",
+          "on_delete_purpose": "RESTRICT"
+        }
+      },
+      "templates_to_consent_records": {
+        "type": "one_to_many",
+        "description": "Each template can have multiple consent records from users",
+        "foreign_key": "consent_records.template_id -> consent_templates.id",
+        "cascade": {
+          "on_delete": "CASCADE"
+        }
+      },
+      "vendors_to_access_logs": {
+        "type": "one_to_many",
+        "description": "Each vendor can have multiple access log entries",
+        "foreign_key": "vendor_access_logs.vendor_id -> vendors.vendor_id",
+        "cascade": {
+          "on_delete": "CASCADE"
+        }
+      },
+      "audit_logs_polymorphic": {
+        "type": "polymorphic",
+        "description": "Audit logs can reference any entity type",
+        "fields": {
+          "entity_type": "Determines which table the entity_id refers to",
+          "entity_id": "ID of the referenced entity"
+        },
+        "supported_entities": [
+          "template",
+          "consent",
+          "vendor",
+          "purpose"
+        ]
+      }
+    },
+    "data_flow": {
+      "consent_collection_flow": {
+        "steps": [
+          {
+            "step": 1,
+            "action": "User visits website",
+            "data": "SDK loads template from /api/public/templates/{id}"
+          },
+          {
+            "step": 2,
+            "action": "User makes consent decision",
+            "data": "POST to /api/blutic-svc/api/v1/public/consent-template/update-user"
+          },
+          {
+            "step": 3,
+            "action": "System records consent",
+            "data": "Creates record in consent_records table"
+          },
+          {
+            "step": 4,
+            "action": "Audit trail created",
+            "data": "Creates record in audit_logs table"
+          },
+          {
+            "step": 5,
+            "action": "Email notification sent",
+            "data": "Creates record in email_events table"
+          }
+        ]
+      },
+      "vendor_management_flow": {
+        "steps": [
+          {
+            "step": 1,
+            "action": "Create vendor",
+            "data": "POST to /api/vendors creates record in vendors table"
+          },
+          {
+            "step": 2,
+            "action": "Upload DPA",
+            "data": "POST to /api/vendors/{id}/upload-dpa updates dpa_file_url"
+          },
+          {
+            "step": 3,
+            "action": "Approve/Reject DPA",
+            "data": "POST/DELETE to /api/vendors/{id}/approve updates dpa_status"
+          },
+          {
+            "step": 4,
+            "action": "Monitor expiry",
+            "data": "Background service checks dpa_valid_till dates"
+          },
+          {
+            "step": 5,
+            "action": "Log data access",
+            "data": "Creates records in vendor_access_logs table"
+          }
+        ]
+      },
+      "purpose_management_flow": {
+        "steps": [
+          {
+            "step": 1,
+            "action": "Create purpose",
+            "data": "POST to /api/purposes creates record in consent_purposes table"
+          },
+          {
+            "step": 2,
+            "action": "Use in template",
+            "data": "Creates record in template_purposes junction table"
+          },
+          {
+            "step": 3,
+            "action": "Update usage count",
+            "data": "Increments usage_count in consent_purposes table"
+          },
+          {
+            "step": 4,
+            "action": "Collect consent",
+            "data": "References purpose_id in consent_records.accepted_purposes"
+          }
+        ]
+      }
+    },
+    "indexes_and_performance": {
+      "high_frequency_queries": [
+        {
+          "query": "Get active templates for organization",
+          "table": "consent_templates",
+          "indexes": ["status", "organization_id"]
+        },
+        {
+          "query": "Get user consent history",
+          "table": "consent_records",
+          "indexes": ["user_reference_id", "template_id"]
+        },
+        {
+          "query": "Get vendor access logs",
+          "table": "vendor_access_logs",
+          "indexes": ["vendor_id", "timestamp"]
+        },
+        {
+          "query": "Get expiring DPAs",
+          "table": "vendors",
+          "indexes": ["dpa_valid_till", "dpa_status"]
+        },
+        {
+          "query": "Get consent analytics by date",
+          "table": "consent_records",
+          "indexes": ["consent_timestamp", "template_id"]
+        }
+      ],
+      "composite_indexes": [
+        {
+          "table": "consent_records",
+          "columns": ["template_id", "consent_timestamp"],
+          "purpose": "Analytics queries by template and time range"
+        },
+        {
+          "table": "vendor_access_logs",
+          "columns": ["vendor_id", "timestamp", "access_granted"],
+          "purpose": "Vendor access audit queries"
+        },
+        {
+          "table": "audit_logs",
+          "columns": ["entity_type", "entity_id", "timestamp"],
+          "purpose": "Entity audit trail queries"
+        }
+      ]
+    },
+    "data_retention": {
+      "consent_records": {
+        "retention_period": "7 years",
+        "reason": "Legal compliance requirements",
+        "archival_strategy": "Move to cold storage after 2 years"
+      },
+      "audit_logs": {
+        "retention_period": "10 years",
+        "reason": "Regulatory audit requirements",
+        "archival_strategy": "Compress and archive after 1 year"
+      },
+      "vendor_access_logs": {
+        "retention_period": "5 years",
+        "reason": "Data processing audit trail",
+        "archival_strategy": "Aggregate monthly summaries after 1 year"
+      },
+      "email_events": {
+        "retention_period": "2 years",
+        "reason": "Operational monitoring",
+        "archival_strategy": "Delete after retention period"
+      }
+    },
+    "privacy_considerations": {
+      "pii_fields": {
+        "consent_records.user_reference_id": {
+          "type": "pseudonymized",
+          "description": "Opaque identifier, no direct PII"
+        },
+        "consent_records.ip_address": {
+          "type": "sensitive",
+          "description": "Can be used for identification, consider hashing"
+        },
+        "vendors.contact_email": {
+          "type": "business_contact",
+          "description": "Business contact information, not end-user PII"
+        }
+      },
+      "anonymization": {
+        "consent_records": {
+          "after": "2 years",
+          "method": "Remove IP address, keep aggregated statistics"
+        }
+      },
+      "encryption": {
+        "at_rest": [
+          "consent_records.user_reference_id",
+          "consent_records.ip_address",
+          "vendors.contact_email"
+        ],
+        "in_transit": "All API communications via HTTPS"
+      }
+    }
+  }
+}

@@ -1,0 +1,487 @@
+{
+  "database_schema": {
+    "tables": {
+      "consent_templates": {
+        "description": "Main consent template configuration",
+        "fields": {
+          "id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true,
+            "description": "Unique template identifier"
+          },
+          "name": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Template display name"
+          },
+          "description": {
+            "type": "TEXT",
+            "nullable": true,
+            "description": "Template description"
+          },
+          "status": {
+            "type": "ENUM('active', 'inactive', 'draft')",
+            "required": true,
+            "default": "draft",
+            "description": "Template status"
+          },
+          "banner_config": {
+            "type": "JSON",
+            "required": true,
+            "description": "Banner display configuration",
+            "schema": {
+              "title": "string",
+              "description": "string",
+              "acceptButtonText": "string",
+              "rejectButtonText": "string",
+              "customizeButtonText": "string",
+              "position": "enum('bottom', 'top', 'center')",
+              "theme": "enum('light', 'dark', 'auto')",
+              "primaryColor": "string",
+              "backgroundColor": "string",
+              "textColor": "string"
+            }
+          },
+          "translations": {
+            "type": "JSON",
+            "nullable": true,
+            "description": "Multi-language translations"
+          },
+          "created_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          },
+          "updated_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+          },
+          "created_by": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "User who created the template"
+          },
+          "organization_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Organization identifier"
+          }
+        },
+        "indexes": [
+          "status",
+          "organization_id",
+          "created_at"
+        ]
+      },
+      "consent_purposes": {
+        "description": "Reusable consent purposes",
+        "fields": {
+          "id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true,
+            "description": "Unique purpose identifier"
+          },
+          "name": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Purpose name"
+          },
+          "description": {
+            "type": "TEXT",
+            "required": true,
+            "description": "Purpose description"
+          },
+          "required": {
+            "type": "BOOLEAN",
+            "default": false,
+            "description": "Whether consent is mandatory"
+          },
+          "category": {
+            "type": "ENUM('essential', 'analytics', 'marketing', 'personalization', 'other')",
+            "required": true,
+            "description": "Purpose category"
+          },
+          "is_active": {
+            "type": "BOOLEAN",
+            "default": true,
+            "description": "Whether purpose is active"
+          },
+          "usage_count": {
+            "type": "INTEGER",
+            "default": 0,
+            "description": "Number of templates using this purpose"
+          },
+          "created_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          },
+          "updated_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+          }
+        },
+        "indexes": [
+          "category",
+          "is_active",
+          "created_at"
+        ]
+      },
+      "template_purposes": {
+        "description": "Junction table linking templates to purposes",
+        "fields": {
+          "id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true
+          },
+          "template_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "foreign_key": "consent_templates.id"
+          },
+          "purpose_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "foreign_key": "consent_purposes.id"
+          },
+          "data_fields": {
+            "type": "JSON",
+            "description": "Array of data fields for this purpose",
+            "example": "[\"name\", \"email\", \"phone\"]"
+          },
+          "third_party_sources": {
+            "type": "JSON",
+            "description": "Array of third-party services",
+            "example": "[\"Analytics Service\", \"Marketing Platform\"]"
+          },
+          "platforms": {
+            "type": "JSON",
+            "description": "Array of platforms",
+            "example": "[\"web\", \"mobile\", \"tablet\"]"
+          },
+          "validity_days": {
+            "type": "INTEGER",
+            "default": 365,
+            "description": "Consent validity in days"
+          },
+          "created_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          }
+        },
+        "indexes": [
+          "template_id",
+          "purpose_id"
+        ],
+        "unique_constraints": [
+          ["template_id", "purpose_id"]
+        ]
+      },
+      "consent_records": {
+        "description": "User consent decisions",
+        "fields": {
+          "id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true
+          },
+          "template_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "foreign_key": "consent_templates.id"
+          },
+          "user_reference_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Opaque user identifier (no PII)"
+          },
+          "status": {
+            "type": "ENUM('accepted', 'rejected', 'partial')",
+            "required": true,
+            "description": "Overall consent status"
+          },
+          "accepted_purposes": {
+            "type": "JSON",
+            "description": "Array of accepted purpose IDs"
+          },
+          "platform": {
+            "type": "VARCHAR(50)",
+            "required": true,
+            "description": "Platform where consent was given"
+          },
+          "language": {
+            "type": "VARCHAR(10)",
+            "required": true,
+            "description": "Language code (ISO format)"
+          },
+          "user_agent": {
+            "type": "TEXT",
+            "description": "Browser/client information"
+          },
+          "ip_address": {
+            "type": "VARCHAR(45)",
+            "description": "IP address for audit purposes"
+          },
+          "consent_timestamp": {
+            "type": "TIMESTAMP",
+            "required": true,
+            "description": "When consent was given"
+          },
+          "expiry_date": {
+            "type": "TIMESTAMP",
+            "nullable": true,
+            "description": "When consent expires"
+          },
+          "version": {
+            "type": "INTEGER",
+            "default": 1,
+            "description": "Consent record version"
+          },
+          "created_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          },
+          "updated_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+          }
+        },
+        "indexes": [
+          "template_id",
+          "user_reference_id",
+          "status",
+          "consent_timestamp",
+          "platform"
+        ]
+      },
+      "vendors": {
+        "description": "Third-party vendor management",
+        "fields": {
+          "vendor_id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true
+          },
+          "vendor_name": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Vendor company name"
+          },
+          "category": {
+            "type": "ENUM('analytics', 'kyc', 'messaging', 'infra', 'payments', 'other')",
+            "required": true,
+            "description": "Vendor category"
+          },
+          "contact_name": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Primary contact person"
+          },
+          "contact_email": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Contact email address"
+          },
+          "notes": {
+            "type": "TEXT",
+            "nullable": true,
+            "description": "Additional notes"
+          },
+          "dpa_status": {
+            "type": "ENUM('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED')",
+            "default": "PENDING",
+            "description": "DPA approval status"
+          },
+          "dpa_file_url": {
+            "type": "VARCHAR(500)",
+            "nullable": true,
+            "description": "URL to DPA document"
+          },
+          "dpa_signed_on": {
+            "type": "DATE",
+            "nullable": true,
+            "description": "DPA signature date"
+          },
+          "dpa_valid_till": {
+            "type": "DATE",
+            "nullable": true,
+            "description": "DPA expiry date"
+          },
+          "allowed_purposes": {
+            "type": "JSON",
+            "description": "Array of allowed data purposes"
+          },
+          "allowed_data_types": {
+            "type": "JSON",
+            "description": "Array of allowed data types"
+          },
+          "risk_level": {
+            "type": "ENUM('LOW', 'MEDIUM', 'HIGH')",
+            "required": true,
+            "description": "Calculated risk level"
+          },
+          "is_active": {
+            "type": "BOOLEAN",
+            "default": true,
+            "description": "Whether vendor is active"
+          },
+          "created_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          },
+          "updated_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+          }
+        },
+        "indexes": [
+          "category",
+          "dpa_status",
+          "risk_level",
+          "is_active",
+          "dpa_valid_till"
+        ]
+      },
+      "vendor_access_logs": {
+        "description": "Vendor data access audit trail",
+        "fields": {
+          "log_id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true
+          },
+          "vendor_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "foreign_key": "vendors.vendor_id"
+          },
+          "vendor_name": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Vendor name at time of access"
+          },
+          "purpose": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "Data access purpose"
+          },
+          "data_types_requested": {
+            "type": "JSON",
+            "description": "Array of requested data types"
+          },
+          "access_granted": {
+            "type": "BOOLEAN",
+            "required": true,
+            "description": "Whether access was granted"
+          },
+          "reason": {
+            "type": "TEXT",
+            "nullable": true,
+            "description": "Reason for access decision"
+          },
+          "timestamp": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          }
+        },
+        "indexes": [
+          "vendor_id",
+          "access_granted",
+          "timestamp",
+          "purpose"
+        ]
+      },
+      "audit_logs": {
+        "description": "System audit trail",
+        "fields": {
+          "id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true
+          },
+          "entity_type": {
+            "type": "ENUM('template', 'consent', 'vendor', 'purpose')",
+            "required": true,
+            "description": "Type of entity being audited"
+          },
+          "entity_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "ID of the entity"
+          },
+          "action": {
+            "type": "ENUM('create', 'update', 'delete', 'view')",
+            "required": true,
+            "description": "Action performed"
+          },
+          "user_id": {
+            "type": "VARCHAR(255)",
+            "required": true,
+            "description": "User who performed the action"
+          },
+          "changes": {
+            "type": "JSON",
+            "nullable": true,
+            "description": "What changed (for updates)"
+          },
+          "metadata": {
+            "type": "JSON",
+            "nullable": true,
+            "description": "Additional context"
+          },
+          "timestamp": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          }
+        },
+        "indexes": [
+          "entity_type",
+          "entity_id",
+          "action",
+          "user_id",
+          "timestamp"
+        ]
+      },
+      "email_events": {
+        "description": "Email notification tracking",
+        "fields": {
+          "id": {
+            "type": "VARCHAR(255)",
+            "primary_key": true
+          },
+          "event_type": {
+            "type": "ENUM('template_created', 'template_activated', 'template_deactivated', 'consent_collected', 'consent_withdrawn', 'vendor_created', 'vendor_approved', 'vendor_rejected', 'dpa_uploaded', 'dpa_approved', 'dpa_expiring', 'dpa_expired', 'compliance_alert', 'bulk_action_completed')",
+            "required": true,
+            "description": "Type of email event"
+          },
+          "data": {
+            "type": "JSON",
+            "description": "Event data for template processing"
+          },
+          "recipients": {
+            "type": "JSON",
+            "description": "Array of email recipients"
+          },
+          "status": {
+            "type": "ENUM('pending', 'sent', 'failed')",
+            "default": "pending",
+            "description": "Email delivery status"
+          },
+          "sent_at": {
+            "type": "TIMESTAMP",
+            "nullable": true,
+            "description": "When email was sent"
+          },
+          "error": {
+            "type": "TEXT",
+            "nullable": true,
+            "description": "Error message if failed"
+          },
+          "created_at": {
+            "type": "TIMESTAMP",
+            "default": "CURRENT_TIMESTAMP"
+          }
+        },
+        "indexes": [
+          "event_type",
+          "status",
+          "created_at"
+        ]
+      }
+    }
+  }
+}
